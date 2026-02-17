@@ -1417,6 +1417,122 @@ footer.ty-footer {
 <title>examtopics_saa_questions</title>
 </head>
 <body class='typora-export os-windows'><div class='typora-export-content'>
+
+<!-- Navigation Bar -->
+<div id="nav-bar" style="position: fixed; top: 0; left: 0; right: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 1000; display: flex; align-items: center; gap: 15px; font-family: Arial, sans-serif;">
+    <label for="questionInput" style="color: white; font-weight: bold; font-size: 16px;">Jump to Q:</label>
+    <input type="number" id="questionInput" min="1" max="1019" placeholder="Enter Q#" style="padding: 8px 12px; border: 2px solid white; border-radius: 5px; font-size: 14px; width: 100px; outline: none;" />
+    <button id="goButton" style="background: white; color: #667eea; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 14px; transition: all 0.3s;">Go!</button>
+    <div id="currentQuestion" style="margin-left: auto; color: white; font-weight: bold; font-size: 14px; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 5px;">Ready!</div>
+</div>
+
+<!-- Add padding to content so nav bar doesn't cover it -->
+<div style="height: 70px;"></div>
+
+<script>
+// Function to scroll to question
+function scrollToQuestion(questionNum) {
+    const questions = document.querySelectorAll('p strong span');
+    for (let span of questions) {
+        const text = span.textContent.trim();
+        if (text === questionNum + '.' || text === questionNum) {
+            const questionElement = span.closest('p');
+            if (questionElement) {
+                // Get element position
+                const elementPosition = questionElement.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - 100; // 100px offset for nav bar + some breathing room
+                
+                // Scroll with offset
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+                
+                // Highlight the question
+                questionElement.style.backgroundColor = '#fffacd';
+                setTimeout(() => {
+                    questionElement.style.backgroundColor = '';
+                }, 2000);
+                
+                // Save bookmark
+                localStorage.setItem('lastQuestion', questionNum);
+                updateCurrentQuestion(questionNum);
+                return true;
+            }
+        }
+    }
+    alert('Question ' + questionNum + ' not found da!');
+    return false;
+}
+
+// Update current question display
+function updateCurrentQuestion(questionNum) {
+    document.getElementById('currentQuestion').textContent = 'Current: Q' + questionNum;
+}
+
+// Go button click
+document.getElementById('goButton').addEventListener('click', function() {
+    const questionNum = document.getElementById('questionInput').value;
+    if (questionNum && questionNum > 0 && questionNum <= 1019) {
+        scrollToQuestion(questionNum);
+    } else {
+        alert('Enter a valid question number (1-1019)!');
+    }
+});
+
+// Enter key press
+document.getElementById('questionInput').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+        document.getElementById('goButton').click();
+    }
+});
+
+// Detect current question on scroll
+let scrollTimeout;
+window.addEventListener('scroll', function() {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(function() {
+        const questions = document.querySelectorAll('p strong span');
+        const windowHeight = window.innerHeight;
+        
+        for (let span of questions) {
+            const text = span.textContent.trim();
+            if (/^\d+\.$/.test(text)) {
+                const rect = span.getBoundingClientRect();
+                if (rect.top >= 60 && rect.top <= windowHeight / 2) {
+                    const questionNum = text.replace('.', '');
+                    localStorage.setItem('lastQuestion', questionNum);
+                    updateCurrentQuestion(questionNum);
+                    break;
+                }
+            }
+        }
+    }, 200);
+});
+
+// Restore bookmark on page load
+window.addEventListener('load', function() {
+    const lastQuestion = localStorage.getItem('lastQuestion');
+    if (lastQuestion) {
+        setTimeout(function() {
+            scrollToQuestion(lastQuestion);
+            console.log('Auto-restored to Question ' + lastQuestion);
+        }, 500);
+    }
+});
+
+// Hover effect for Go button
+document.getElementById('goButton').addEventListener('mouseover', function() {
+    this.style.transform = 'scale(1.05)';
+    this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+});
+
+document.getElementById('goButton').addEventListener('mouseout', function() {
+    this.style.transform = 'scale(1)';
+    this.style.boxShadow = 'none';
+});
+</script>
+
 <div id='write'  class=''><h1 id='aws-solutions-architect-associate-exam-question-and-answers'><span>AWS Solutions Architect Associate Exam Question and Answers</span></h1><hr /><p><strong><span>1.</span></strong><span> A company needs the ability to analyze the log files of its proprietary application. The logs are stored in JSON format in an Amazon S3 bucket. Queries will be simple and will run on-demand. A solutions architect needs to perform the analysis with minimal changes to the existing architecture. What should the solutions architect do to meet these requirements with the LEAST amount of operational overhead?</span></p><p><strong><span>Choices:</span></strong></p><ul><li><p><strong><span>A.</span></strong><span> Use Amazon Redshift to load all the content into one place and run the SQL queries as needed.</span></p></li><li><p><strong><span>B.</span></strong><span> Use Amazon CloudWatch Logs to store the logs. Run SQL queries as needed from the Amazon CloudWatch console.</span></p></li><li><p><strong><span>C.</span></strong><span> Use Amazon Athena directly with Amazon S3 to run the queries as needed.</span></p></li><li><p><strong><span>D.</span></strong><span> Use AWS Glue to catalog the logs. Use a transient Apache Spark cluster on Amazon EMR to run the SQL queries as needed.</span></p></li></ul><details>
 <summary>📝 Click to reveal answer</summary><p><strong><span>Answer:</span></strong><span> </span><strong><span>C</span></strong></p><ul><li><p><span>Use Amazon Athena directly with Amazon S3 to run the queries as needed.</span></p></li></ul><p></details></p><hr /><p><strong><span>2.</span></strong><span> A company creates dedicated AWS accounts in AWS Organizations for its business units. Recently, an important notification was sent to the root user email address of a business unit account instead of the assigned account owner. The company wants to ensure that all future notifications can be sent to different employees based on the notification categories of billing, operations, or security. Which solution will meet these requirements MOST securely?</span></p><p><strong><span>Choices:</span></strong></p><ul><li><p><strong><span>A.</span></strong><span> Configure each AWS account to use a single email address that the company manages. Ensure that all account owners can access the email account to receive notifications. Configure alternate contacts for each AWS account with corresponding distribution lists for the billing team, the security team, and the operations team for each business unit.</span></p></li><li><p><strong><span>B.</span></strong><span> Configure each AWS account to use a different email distribution list for each business unit that the company manages. Configure each distribution list with administrator email addresses that can respond to alerts. Configure alternate contacts for each AWS account with corresponding distribution lists for the billing team, the security team, and the operations team for each business unit.</span></p></li><li><p><strong><span>C.</span></strong><span> Configure each AWS account root user email address to be the individual company managed email address of one person from each business unit. Configure alternate contacts for each AWS account with corresponding distribution lists for the billing team, the security team, and the operations team for each business unit.</span></p></li><li><p><strong><span>D.</span></strong><span> Configure each AWS account root user to use email aliases that go to a centralized mailbox. Configure alternate contacts for each account by using a single business managed email distribution list each for the billing team, the security team, and the operations team.</span></p></li></ul><details>
 <summary>📝 Click to reveal answer</summary><p><strong><span>Answer:</span></strong><span> </span><strong><span>D</span></strong></p><ul><li><p><span>Configure each AWS account root user to use email aliases that go to a centralized mailbox. Configure alternate contacts for each account by using a single business managed email distribution list each for the billing team, the security team, and the operations team.</span></p></li></ul><p></details></p><hr /><p><strong><span>3.</span></strong><span> A development team runs monthly resource-intensive tests on its general purpose Amazon RDS for MySQL DB instance with Performance Insights enabled. The testing lasts for 48 hours once a month and is the only process that uses the database. The team wants to reduce the cost of running the tests without reducing the compute and memory attributes of the DB instance. Which solution meets these requirements MOST cost-effectively?</span></p><p><strong><span>Choices:</span></strong></p><ul><li><p><strong><span>A.</span></strong><span> Stop the DB instance when tests are completed. Restart the DB instance when required.</span></p></li><li><p><strong><span>B.</span></strong><span> Use an Auto Scaling policy with the DB instance to automatically scale when tests are completed.</span></p></li><li><p><strong><span>C.</span></strong><span> Create a snapshot when tests are completed. Terminate the DB instance and restore the snapshot when required.</span></p></li><li><p><strong><span>D.</span></strong><span> Modify the DB instance to a low-capacity instance when tests are completed. Modify the DB instance again when required.</span></p></li></ul><details>
